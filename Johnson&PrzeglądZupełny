@@ -1,0 +1,139 @@
+maszyna3 = [8,5,6,7,6]
+maszyna2 = [3,3,8,8,6]
+maszyna1 = [1,9,7,4,6]
+zad = [0,1,2,3,4]
+
+def permute(xs, low=0):
+    if low + 1 >= len(xs):
+        yield xs
+    else:
+        for p in permute(xs, low + 1):
+            yield p
+        for i in range(low + 1, len(xs)):
+            xs[low], xs[i] = xs[i], xs[low]
+            for p in permute(xs, low + 1):
+                yield p
+            xs[low], xs[i] = xs[i], xs[low]
+
+def licz():
+
+    suma_masz2 = maszyna1[zad[0]]
+    suma_masz1 = 0
+    for i in zad:
+        # suma_masz1
+        suma_masz1 = suma_masz1 + maszyna1[i]
+        # suma_masz2
+        if suma_masz1 > suma_masz2:
+            suma_masz2 = suma_masz1
+        suma_masz2 = suma_masz2 + maszyna2[i]
+    return suma_masz2
+
+###############Przegląd Zupełny############
+
+lista = []
+czasy = []
+
+for p in permute(zad):
+    for i in permute(zad):
+        lista.append(p)
+        czasy.append(licz())
+        print("permutacja:", p, " Cmax:", licz())
+    id = czasy.index(min(czasy))
+print("Najmniejszy czas: ", czasy[id], " dla permutacji: ", lista[id])
+
+##################Johnson#############
+
+def suma(tab1,tab2):
+    m_p = []
+    for i in range(len(tab2)):
+        m_p.append(tab1[i]+tab2[i])
+    return m_p
+
+def johnson(tab1,tab2,zad):
+    pom1 = []
+    pom2 = []
+    for i in range(len(zad)):
+        if tab1[zad[i]] < tab2[zad[i]]:
+            pom1.append(zad[i])
+        else:
+            pom2.append(zad[i])
+    return pom1, pom2
+
+def sortowanie1(lista,m1):
+    lista_p = [[] for i in range(len(lista))]
+    wynik = []
+    for i in range(len(lista)):
+        lista_p[i].append(m1[lista[i]])
+        lista_p[i].append(lista[i])
+
+    lista_p = sorted(lista_p, key=lambda x: x[0])
+    for i in range(len(lista)):
+        wynik.append(lista_p[i][1])
+    return wynik
+
+def sortowanie2(lista,m2):
+    lista_p = [[] for i in range(len(lista))]
+    wynik = []
+    for i in range(len(lista)):
+        lista_p[i].append(m2[lista[i]])
+        lista_p[i].append(lista[i])
+
+    lista_p = sorted(lista_p, key=lambda x: x[0],reverse=True)
+    for i in range(len(lista)):
+        wynik.append(lista_p[i][1])
+    return wynik
+
+def licz2(tab1,tab2,zadania):
+    suma_masz2 = tab1[zadania[0]]
+    suma_masz1 = 0
+    for i in range(len(zadania)):
+        # suma_masz1
+        suma_masz1 = suma_masz1 + tab1[zadania[i]]
+        # suma_masz2
+        if suma_masz1 > suma_masz2:
+            suma_masz2 = suma_masz1
+        suma_masz2 = suma_masz2 + tab2[zadania[i]]
+    return suma_masz2
+
+
+def licz3(tab1,tab2,tab3,zadania):
+    suma_masz2 = tab1[zadania[0]]
+    suma_masz3 = tab2[zadania[0]] + tab1[zadania[0]]
+    suma_masz1 = 0
+    for i in range(len(zadania)):
+        # suma_masz1
+        suma_masz1 = suma_masz1 + tab1[zadania[i]]
+        # suma_masz2
+        if suma_masz1 > suma_masz2:
+            suma_masz2 = suma_masz1
+        suma_masz2 = suma_masz2 + tab2[zadania[i]]
+        # suma_masz3
+        if suma_masz2 > suma_masz3:
+            suma_masz3 = suma_masz2
+        suma_masz3 = suma_masz3 + tab3[zadania[i]]
+    return suma_masz3
+
+#DLA DWÓCH MASZYN
+
+arg1, arg2 = johnson(maszyna1,maszyna2,zad)
+
+posortowane = (sortowanie1(arg1,m1))
+posortowane2 = (sortowanie2(arg2,m2))
+
+for i in range(len(posortowane2)):
+    posortowane.append(posortowane2[i])
+
+print("Najmniejszy czas: ", licz2(maszyna1,maszyna2,posortowane), " dla Johnsona 2 maszyn: ", posortowane)
+
+#DLA TRZECH MASZYN
+
+m1 = suma(maszyna1,maszyna2)
+m2 = suma(maszyna2,maszyna3)
+
+jeden, dwa = johnson(m1,m2,zad)
+first = (sortowanie1(jeden,m1))
+second = (sortowanie2(dwa,m2))
+for i in range(len(second)):
+    first.append(second[i])
+
+print("Najmniejszy czas: ", licz3(maszyna1,maszyna2,maszyna3,first), " dla Johnsona: 3 maszyn", first)
