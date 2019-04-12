@@ -1,0 +1,144 @@
+import random
+import math
+
+def czytanie_z_pliku(plik):
+
+    odczytany = open(plik,"r")
+
+    linia = odczytany.readline()
+    pierwsza_linijka = (linia.split())
+    pierwsza_linijka = list(map(int, pierwsza_linijka))
+
+
+    ilosc_zad = pierwsza_linijka[0]
+    ilosc_maszyn = pierwsza_linijka[1]
+
+    lista = [[] for i in range(ilosc_maszyn)]
+
+    for i in range(ilosc_zad):
+        lista_p = odczytany.readline().split()
+        for j in range(ilosc_maszyn):
+            lista[j].append(int(lista_p[j]))
+            # print(lista)
+    odczytany.close()
+    return lista
+
+def licz(lista, zadanie):
+
+    czasy = [[] for i in range(len(lista))]
+
+    for i in range(len(czasy)):
+        czasy[i].append(0)
+
+    for j in range(1, len(zadanie) + 1):
+        czasy[0].append(czasy[0][j - 1] + lista[0][zadanie[j - 1]])
+
+    for i in range(1, len(lista)):
+        for j in range(1, len(zadanie) + 1):
+            czasy[i].append(max(czasy[i - 1][j], czasy[i][j - 1]) + lista[i][zadanie[j - 1]])
+
+    return czasy[-1][-1]
+
+
+def suma(indeks, lista):
+    suma = 0
+    for i in range(len(lista)):
+        suma = suma + lista[i][indeks]
+    return suma
+
+
+def sortowanie(lista):
+    lista_p = []
+    for j in range(len(lista[0])):
+        lista_p.append(j)
+
+    return sorted(lista_p, key=lambda x: suma(x, lista))
+
+def alg_neh(lista):
+    zad_sort = sortowanie(lista)
+    zad_sort.reverse()
+    #print("sortowane: ", zad_sort)
+
+    zadania = []
+    zadania.append(zad_sort[0])
+
+
+    indeks_zad = 1
+    indeks = 0
+    cmax = []
+    #print(zadania)
+    for c in range(len(zad_sort) - 1):
+        for a in range(len(zadania) + 1):
+            zadania.insert(indeks, zad_sort[indeks_zad])
+            #print(zadania)
+            cmax.append(licz(lista, zadania))
+            del zadania[indeks]
+            # zadania.pop(indeks)
+            indeks = indeks + 1
+        # print("cmax: ",cmax)
+        for i in range(len(cmax)):
+            if (min(cmax) == cmax[i]):
+                zadania.insert(i, zad_sort[indeks_zad])
+                break
+        wynik = min(cmax)
+        cmax.clear()
+        indeks_zad = indeks_zad + 1
+        indeks = 0
+
+    #for i in range(len(zadania)):
+        #zadania[i] = zadania[i] + 1
+
+    return zadania, wynik
+
+lista = czytanie_z_pliku("ta000.txt")
+
+zad, czas = alg_neh(lista)
+
+print("zadania: ",zad)
+print("czas: ", czas)
+
+def swap(lista1):
+    wylosowane = random.sample(lista1, 2)
+    temp = lista1.index(wylosowane[0])
+    temp2 = lista1.index(wylosowane[1])
+    #print(temp,temp2)
+    zapas = lista1[temp]
+    lista1[temp] = lista1[temp2]
+    lista1[temp2] = zapas
+    return lista1
+
+neutral = []
+for i in range(len(zad)):
+    neutral.append(i)
+
+losowy = random.sample(neutral, len(neutral))
+
+czas_l = licz(lista,losowy)
+czas_n = licz(lista,neutral)
+
+
+wspolczynnik_schladzania = 0.99
+T_0 = 20
+T = T_0
+i = 1
+naj_zad = zad
+naj_czas = czas
+
+while T > 0.01:
+    i = i + 1
+    sasiad = swap(naj_zad)
+    czas = licz(lista,sasiad)
+    if(czas < naj_czas):
+        P=1
+
+    else:
+        P = math.exp((naj_czas-czas)/T)
+    if(P >= random.random()):
+            naj_zad = sasiad
+            naj_czas = czas
+    T = wspolczynnik_schladzania*T
+
+print("zadania: ",naj_zad)
+print("czas: ", naj_czas)
+
+print(i)
